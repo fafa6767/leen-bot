@@ -4,7 +4,8 @@ from telegram.ext import ApplicationBuilder, ContextTypes, MessageHandler, filte
 from openai import OpenAI
 
 TELEGRAM_TOKEN = "8731526521:AAH2qv9Q046KNZQ2YUS4eNKC7-D28joy7eg"
-OPENROUTER_API_KEY = "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"
+# سحب المفتاح بأمان من متغيرات السحابة السرية
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 
 client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
