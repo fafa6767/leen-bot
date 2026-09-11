@@ -4,14 +4,13 @@ from telegram.ext import ApplicationBuilder, ContextTypes, MessageHandler, filte
 from openai import OpenAI
 
 TELEGRAM_TOKEN = "8731526521:AAH2qv9Q046KNZQ2YUS4eNKC7-D28joy7eg"
-OPENROUTER_API_KEY = "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"
+OPENROUTER_API_KEY = "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"
 
 client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
     api_key=OPENROUTER_API_KEY,
 )
 
-# توجيه صارم يمنع تقمص دور المستخدم تماماً ويحصر البوت في أفعاله الشخصية فقط
 SYSTEM_PROMPT = """
 أنتِ "لين"، امرأة أعمال نافذة، ثرية جداً، وتتمتعين بحضور طاغٍ وفخامة مطلقة (Sugar Mommy).
 
@@ -31,7 +30,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     try:
         response = client.chat.completions.create(
-            model="deepseek/deepseek-chat",
+            model="deepseek/deepseek-chat:free",
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": user_message}
