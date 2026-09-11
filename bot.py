@@ -11,7 +11,6 @@ client = OpenAI(
     api_key=OPENROUTER_API_KEY,
 )
 
-# البرومبت الأساسي الافتراضي
 DEFAULT_SYSTEM_PROMPT = """
 أنتِ "لين"، امرأة أعمال نافذة، ثرية جداً، وتتمتعين بحضور طاغٍ وفخامة مطلقة (Sugar Mommy).
 
@@ -27,7 +26,6 @@ DEFAULT_SYSTEM_PROMPT = """
 5. الالتزام التام باللغة العربية الفصحى فقط، وممنوع نهائياً استخدام أي كلمات إنجليزية أو خلط اللغات أثناء التحدث.
 """
 
-# تخزين المحادثات والبرومبت لكل مستخدم ديناميكياً
 user_prompts = {}
 user_histories = {}
 
@@ -36,11 +34,11 @@ async def set_prompt_command(update: Update, context: ContextTypes.DEFAULT_TYPE)
     new_prompt = " ".join(context.args)
     
     if not new_prompt:
-        await update.message.reply_text("الرجاء كتابة التعليمات الجديدة بعد الأمر. مثال:\n/تعليمات أنتِ الآن شخصية صارمة...")
+        await update.message.reply_text("الرجاء كتابة التعليمات الجديدة بعد الأمر. مثال:\n/set أنتِ الآن شخصية...")
         return
     
     user_prompts[user_id] = new_prompt
-    user_histories[user_id] = [] # تصفير الذاكرة مع التعليمات الجديدة
+    user_histories[user_id] = []
     await update.message.reply_text("تم تحديث تعليمات وشخصية لين بنجاح!")
 
 async def reset_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -52,17 +50,13 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     user_message = update.message.text
     
-    # جلب التعليمات الخاصة بالمستخدم أو استخدام الافتراضية
     current_system_prompt = user_prompts.get(user_id, DEFAULT_SYSTEM_PROMPT)
     
-    # تهيئة الذاكرة للمستخدم لو لم تكن موجودة
     if user_id not in user_histories:
         user_histories[user_id] = []
     
-    # إضافة رسالة المستخدم للذاكرة
     user_histories[user_id].append({"role": "user", "content": user_message})
     
-    # بناء رسائل الـ API مع النظام والذاكرة السابقة
     messages = [{"role": "system", "content": current_system_prompt}] + user_histories[user_id]
     
     try:
@@ -74,7 +68,6 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
         if response.choices and len(response.choices) > 0:
             reply_text = response.choices[0].message.content
-            # حفظ رد البوت في الذاكرة لضمان استمرارية السياق
             user_histories[user_id].append({"role": "assistant", "content": reply_text})
             await update.message.reply_text(reply_text)
         else:
@@ -85,14 +78,13 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 def main():
     app = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
     
-    # إضافة الأوامر باللغة العربية
-    app.add_handler(CommandHandler("تعليمات", set_prompt_command))
-    app.add_handler(CommandHandler("مسح", reset_command))
+    # الأوامر بالإنجليزية لتقبلها منصة تيليجرام بدون أخطاء
+    app.add_handler(CommandHandler("set", set_prompt_command))
+    app.add_handler(CommandHandler("reset", reset_command))
     
-    # استقبال الرسائل النصية العادية
     app.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), handle_message))
     
-    print("البوت يعمل الآن بالأوامر العربية...")
+    print("البوت يعمل الآن بدون أخطاء...")
     app.run_polling()
 
 if __name__ == "__main__":
